@@ -1,4 +1,2 @@
-export function createScrollAnimation() {
-    console.log('createScrollAnimation');
-    
-}
+export * from './lib/scroll';
+export * from './lib/useScroll';
