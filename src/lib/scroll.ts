@@ -1,12 +1,12 @@
 import { createScrollViewTimeline } from './createScrollViewTimeline';
 
 export function defineEnterAnimation(options: EnterAnimationOptions) {
-  const { subject, keyframes } = options;
+  const { target, subject = target, keyframes } = options;
   console.log('defineEnterAnimation', options);
   // let rect: DOMRect;
   // let observing = false;
 
-  const animatable = subject.animate(keyframes, {
+  const animatable = target.animate(keyframes, {
     duration: 100,
     easing: 'ease-in-out',
     fill: 'forwards',
@@ -29,6 +29,7 @@ export function defineEnterAnimation(options: EnterAnimationOptions) {
 
 interface EnterAnimationOptions {
   // element to observe
-  subject: HTMLElement;
+  target: HTMLElement;
+  subject?: HTMLElement;
   keyframes: Keyframe[] | PropertyIndexedKeyframes | null;
 }

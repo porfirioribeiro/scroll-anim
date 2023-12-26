@@ -8,6 +8,7 @@ module.exports = {
   extends: [
     'prettier/prettier',
     'plugin:prettier/recommended',
+    'plugin:@typescript-eslint/recommended',
     'eslint:recommended',
     'plugin:vue/vue3-recommended',
     'prettier',
@@ -15,5 +16,10 @@ module.exports = {
   rules: {
     // override/add rules settings here, such as:
     // 'vue/no-unused-vars': 'error'
+    'no-undef': 'off',
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'error',
   },
+  plugins: ['@typescript-eslint'],
+  root: true,
 };
