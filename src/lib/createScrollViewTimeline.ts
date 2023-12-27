@@ -32,7 +32,7 @@ export function createScrollViewTimeline(options: ScrollViewTimelineOptions) {
   function handleScroll() {
     const scrollTop = document.documentElement.scrollTop;
 
-    const { scrollBegin, scrollEnd } = pos;
+    const [scrollBegin, scrollEnd] = pos;
 
     const percent = Math.max(Math.min((scrollTop - scrollBegin) / (scrollEnd - scrollBegin), 1), 0);
 
@@ -83,7 +83,7 @@ function calculatePos(rect: DOMRect, rangeStart: CSSRangeUnit, rangeEnd: CSSRang
   const scrollBegin = top - clientHeight;
   const scrollEnd = scrollBegin + rect.height;
 
-  return { top, scrollBegin, scrollEnd };
+  return [scrollBegin, scrollEnd];
 }
 
 type ParsedRange = [type: CSSRangeType, percent: number];
