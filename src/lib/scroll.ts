@@ -1,35 +1,59 @@
 import { createScrollViewTimeline } from './createScrollViewTimeline';
+import { CSSRangeUnit } from './types';
 
 export function defineEnterAnimation(options: EnterAnimationOptions) {
-  const { target, subject = target, keyframes } = options;
+  const { target, subject = target, keyframes, noNative, rangeStart, rangeEnd } = options;
   console.log('defineEnterAnimation', options);
-  // let rect: DOMRect;
-  // let observing = false;
+
+  let nativeTimeline: AnimationTimeline | undefined = undefined;
+
+  if (!noNative && 'ViewTimeline' in window) {
+    nativeTimeline = new ViewTimeline({
+      subject,
+    });
+  }
+
+  console.log('nativeTimeline', nativeTimeline);
 
   const animatable = target.animate(keyframes, {
     duration: 100,
     easing: 'ease-in-out',
     fill: 'forwards',
-  });
-  animatable.pause();
-
-  const timeline = createScrollViewTimeline({
-    subject,
-    onScroll: (percent) => {
-      animatable.currentTime = percent * 100;
-    },
-    onEnd: () => {
-      animatable.finish();
-      timeline.pause();
-    },
+    timeline: nativeTimeline,
+    rangeStart,
+    rangeEnd,
   });
 
-  return animatable;
+  if (!nativeTimeline) {
+    animatable.pause();
+    const timeline = createScrollViewTimeline({
+      subject,
+      onScroll: (percent) => {
+        animatable.currentTime = percent * 100;
+        console.log('onScroll', percent);
+      },
+      onEnd: () => {
+        // animatable.finish();
+        // timeline.pause();
+      },
+    });
+    console.log('timeline', timeline);
+  }
+
+  return {
+    destroy() {
+      console.log('destroy');
+      animatable.cancel();
+    },
+  };
 }
 
-interface EnterAnimationOptions {
+export interface EnterAnimationOptions {
   // element to observe
   target: HTMLElement;
   subject?: HTMLElement;
   keyframes: Keyframe[] | PropertyIndexedKeyframes | null;
+  rangeStart?: CSSRangeUnit;
+  rangeEnd?: CSSRangeUnit;
+  noNative?: boolean;
 }

@@ -1,6 +1,8 @@
+import { CSSRangeType, CSSRangeUnit } from './types';
+
 export function createScrollViewTimeline(options: ScrollViewTimelineOptions) {
   console.log('defineEnterAnimation', options);
-  const { subject, onScroll, onEnd } = options;
+  const { subject, rangeStart = 'cover 0%', rangeEnd = 'cover 100%', onScroll, onEnd } = options;
 
   let pos: ReturnType<typeof calculatePos>;
   let observing = false;
@@ -15,7 +17,7 @@ export function createScrollViewTimeline(options: ScrollViewTimelineOptions) {
 
   function startScrollObserve(rect = subject.getBoundingClientRect()) {
     observing = true;
-    pos = calculatePos(rect);
+    pos = calculatePos(rect, rangeStart, rangeEnd);
 
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -59,7 +61,20 @@ export function createScrollViewTimeline(options: ScrollViewTimelineOptions) {
   };
 }
 
-export function calculatePos(rect: DOMRect) {
+export interface ScrollViewTimelineOptions {
+  subject: HTMLElement;
+  rangeStart?: CSSRangeUnit;
+  rangeEnd?: CSSRangeUnit;
+  onScroll?: (percent: number) => void;
+  onEnd?: () => void;
+}
+
+function calculatePos(rect: DOMRect, rangeStart: CSSRangeUnit, rangeEnd: CSSRangeUnit) {
+  const [startType, startPercent] = parseRange(rangeStart);
+  const [endType, endPercent] = parseRange(rangeEnd);
+
+  console.log('calculatePos', startType, startPercent, endType, endPercent);
+
   const scrollTop = document.documentElement.scrollTop;
   const clientHeight = document.documentElement.clientHeight;
 
@@ -71,8 +86,9 @@ export function calculatePos(rect: DOMRect) {
   return { top, scrollBegin, scrollEnd };
 }
 
-export interface ScrollViewTimelineOptions {
-  subject: HTMLElement;
-  onScroll?: (percent: number) => void;
-  onEnd?: () => void;
+type ParsedRange = [type: CSSRangeType, percent: number];
+
+function parseRange(range: CSSRangeUnit): ParsedRange {
+  const [type, percent] = range.split(' ');
+  return [type as CSSRangeType, parseFloat(percent) / 100];
 }
