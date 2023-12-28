@@ -17,8 +17,7 @@ export function defineEnterAnimation(options: EnterAnimationOptions) {
 
   const animatable = target.animate(keyframes, {
     duration: 100,
-    easing: 'ease-in-out',
-    fill: 'forwards',
+    fill: 'both',
     timeline: nativeTimeline,
     rangeStart,
     rangeEnd,
@@ -28,9 +27,11 @@ export function defineEnterAnimation(options: EnterAnimationOptions) {
     animatable.pause();
     const timeline = createScrollViewTimeline({
       subject,
+      rangeStart,
+      rangeEnd,
       onScroll: (percent) => {
         animatable.currentTime = percent * 100;
-        console.log('onScroll', percent);
+        // console.log('onScroll', percent);
       },
       onEnd: () => {
         // animatable.finish();

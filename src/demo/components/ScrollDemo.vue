@@ -27,12 +27,13 @@ useScrollAnimation({
   <div ref="subject" class="subject">
     <div ref="target" class="target"></div>
     <p>Scroll down to see the effect</p>
+    <p>rangeStart: {{ rangeStart ?? 'cover 0%' }} rangeEnd: {{ rangeEnd ?? 'cover 100%' }} noNative {{ noNative }}</p>
   </div>
 </template>
 <style scoped>
 .subject {
   height: 30vh;
-  background-color: aqua;
+  background-color: blue;
   position: relative;
   flex: 1;
 }
@@ -40,5 +41,9 @@ useScrollAnimation({
   position: absolute;
   inset: 0;
   background-color: red;
+}
+p {
+  z-index: 2;
+  position: relative;
 }
 </style>

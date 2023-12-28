@@ -5,8 +5,8 @@ import ScrollDemo from './components/ScrollDemo.vue';
 <template>
   <div style="height: 120vh"></div>
   <div style="display: flex">
-    <ScrollDemo range-start="cover 0%" range-end="contain 0%" />
-    <ScrollDemo range-start="cover 0%" range-end="contain 0%" no-native />
+    <ScrollDemo range-start="cover 0%" range-end="cover 50%" />
+    <ScrollDemo range-start="cover 0%" range-end="cover 50%" no-native />
   </div>
   <div style="height: 120vh"></div>
   <div style="display: flex">

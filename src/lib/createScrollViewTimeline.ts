@@ -1,9 +1,12 @@
 import { CSSRangeType, CSSRangeUnit } from './types';
 
-export function createScrollViewTimeline(options: ScrollViewTimelineOptions) {
-  console.log('defineEnterAnimation', options);
-  const { subject, rangeStart = 'cover 0%', rangeEnd = 'cover 100%', onScroll, onEnd } = options;
-
+export function createScrollViewTimeline({
+  subject,
+  rangeStart = 'cover 0%',
+  rangeEnd = 'cover 100%',
+  onScroll,
+  onEnd,
+}: ScrollViewTimelineOptions) {
   let pos: ReturnType<typeof calculatePos>;
   let observing = false;
 
@@ -25,7 +28,6 @@ export function createScrollViewTimeline(options: ScrollViewTimelineOptions) {
 
   function stopScrollObserve() {
     observing = false;
-    console.log('stop');
     window.removeEventListener('scroll', handleScroll);
   }
 
@@ -36,12 +38,8 @@ export function createScrollViewTimeline(options: ScrollViewTimelineOptions) {
 
     const percent = Math.max(Math.min((scrollTop - scrollBegin) / (scrollEnd - scrollBegin), 1), 0);
 
-    onScroll?.(percent);
-
-    if (percent >= 1) {
-      onEnd?.();
-      // stopScrollObserve();
-    }
+    if (percent <= 1) onScroll?.(percent);
+    if (percent >= 1) onEnd?.();
   }
 
   function pause() {
@@ -53,11 +51,17 @@ export function createScrollViewTimeline(options: ScrollViewTimelineOptions) {
     io.observe(subject);
   }
 
+  function destroy() {
+    stopScrollObserve();
+    io.disconnect();
+  }
+
   resume();
 
   return {
     pause,
     resume,
+    destroy,
   };
 }
 
@@ -73,15 +77,27 @@ function calculatePos(rect: DOMRect, rangeStart: CSSRangeUnit, rangeEnd: CSSRang
   const [startType, startPercent] = parseRange(rangeStart);
   const [endType, endPercent] = parseRange(rangeEnd);
 
-  console.log('calculatePos', startType, startPercent, endType, endPercent);
-
   const scrollTop = document.documentElement.scrollTop;
   const clientHeight = document.documentElement.clientHeight;
 
   const top = scrollTop + rect.top;
+  const height = rect.height;
 
-  const scrollBegin = top - clientHeight;
-  const scrollEnd = scrollBegin + rect.height;
+  const beginY = top - clientHeight;
+
+  let scrollBegin = 0;
+  if (startType === 'contain') {
+    scrollBegin = beginY + height + clientHeight * startPercent - height * startPercent;
+  } else if (startType === 'cover') {
+    scrollBegin = beginY + clientHeight * startPercent + height * startPercent;
+  }
+
+  let scrollEnd = 0;
+  if (endType === 'contain') {
+    scrollEnd = beginY + height + clientHeight * endPercent - height * endPercent;
+  } else if (endType === 'cover') {
+    scrollEnd = beginY + clientHeight * endPercent + height * endPercent;
+  }
 
   return [scrollBegin, scrollEnd];
 }
