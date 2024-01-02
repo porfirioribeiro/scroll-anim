@@ -1,5 +1,7 @@
 import { CSSRangeType, CSSRangeUnit } from './types';
 
+export type AnimationState = 'start' | 'running' | 'end';
+
 export function createScrollViewTimeline({
   subject,
   rangeStart = 'cover 0%',
@@ -9,6 +11,8 @@ export function createScrollViewTimeline({
 }: ScrollViewTimelineOptions) {
   let pos: ReturnType<typeof calculatePos>;
   let observing = false;
+  let state: AnimationState = 'start';
+  let prevValue = -1;
 
   const io = new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting && !observing) {
@@ -36,10 +40,15 @@ export function createScrollViewTimeline({
 
     const [scrollBegin, scrollEnd] = pos;
 
-    const percent = Math.max(Math.min((scrollTop - scrollBegin) / (scrollEnd - scrollBegin), 1), 0);
+    const value = Math.max(Math.min((scrollTop - scrollBegin) / (scrollEnd - scrollBegin), 1), 0);
 
-    if (percent <= 1) onScroll?.(percent);
-    if (percent >= 1) onEnd?.();
+    if (prevValue === value) return;
+
+    state = value === 0 ? 'start' : value === 1 ? 'end' : 'running';
+    prevValue = value;
+
+    onScroll?.(value, prevValue, state);
+    if (value >= 1) onEnd?.();
   }
 
   function pause() {
@@ -69,8 +78,8 @@ export interface ScrollViewTimelineOptions {
   subject: HTMLElement;
   rangeStart?: CSSRangeUnit;
   rangeEnd?: CSSRangeUnit;
-  onScroll?: (percent: number) => void;
-  onEnd?: () => void;
+  onScroll?(value: number, prevValue: number, state: AnimationState): void;
+  onEnd?(): void;
 }
 
 function calculatePos(rect: DOMRect, rangeStart: CSSRangeUnit, rangeEnd: CSSRangeUnit) {

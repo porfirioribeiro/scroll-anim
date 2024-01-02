@@ -13,8 +13,6 @@ export function defineEnterAnimation(options: EnterAnimationOptions) {
     });
   }
 
-  console.log('nativeTimeline', nativeTimeline);
-
   const animatable = target.animate(keyframes, {
     duration: 100,
     fill: 'both',
@@ -22,28 +20,25 @@ export function defineEnterAnimation(options: EnterAnimationOptions) {
     rangeStart,
     rangeEnd,
   });
+  animatable.onfinish = () => {
+    console.log('onfinish');
+  };
 
   if (!nativeTimeline) {
     animatable.pause();
-    const timeline = createScrollViewTimeline({
+    createScrollViewTimeline({
       subject,
       rangeStart,
       rangeEnd,
-      onScroll: (percent) => {
-        animatable.currentTime = percent * 100;
-        // console.log('onScroll', percent);
-      },
-      onEnd: () => {
-        // animatable.finish();
-        // timeline.pause();
+      onScroll(value, oldValue, state) {
+        console.log('onScroll', value, oldValue, state);
+        animatable.currentTime = value * 100;
       },
     });
-    console.log('timeline', timeline);
   }
 
   return {
     destroy() {
-      console.log('destroy');
       animatable.cancel();
     },
   };
