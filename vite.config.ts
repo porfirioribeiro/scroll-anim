@@ -10,6 +10,7 @@ export default defineConfig({
       '$lib/*': '/src/*',
     },
   },
+  base: '',
   build: {
     outDir: 'demo',
   },
