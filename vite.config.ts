@@ -6,19 +6,11 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': '/src',
       $lib: '/src/index.ts',
       '$lib/*': '/src/*',
     },
   },
   build: {
-    rollupOptions: {
-      external: ['vue'],
-    },
-    lib: {
-      entry: 'src/index.ts',
-      fileName: 'index',
-      formats: ['es'],
-    },
+    outDir: 'demo',
   },
 });
