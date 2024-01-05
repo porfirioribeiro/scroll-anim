@@ -56,23 +56,21 @@ export function createScrollViewTimeline({
     io.unobserve(subject);
   }
 
-  function resume() {
+  function play() {
     io.observe(subject);
   }
 
-  function destroy() {
+  function cancel() {
     stopScrollObserve();
     io.disconnect();
   }
 
-  resume();
+  play();
 
-  return {
-    pause,
-    resume,
-    destroy,
-  };
+  return { pause, play, cancel };
 }
+
+export type ScrollViewTimeline = ReturnType<typeof createScrollViewTimeline>;
 
 export interface ScrollViewTimelineOptions {
   subject: HTMLElement;

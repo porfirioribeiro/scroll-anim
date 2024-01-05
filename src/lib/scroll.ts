@@ -1,11 +1,12 @@
-import { createScrollViewTimeline } from './createScrollViewTimeline';
+import { ScrollViewTimeline, createScrollViewTimeline } from './createScrollViewTimeline';
 import { CSSRangeUnit } from './types';
 
-export function defineEnterAnimation(options: EnterAnimationOptions) {
+export function defineEnterAnimation(options: EnterAnimationOptions): EnterAnimation {
   const { target, subject = target, keyframes, noNative, rangeStart, rangeEnd } = options;
   console.log('defineEnterAnimation', options);
 
   let nativeTimeline: AnimationTimeline | undefined = undefined;
+  let scrollViewTimeline: ScrollViewTimeline | undefined = undefined;
 
   if (!noNative && 'ViewTimeline' in window) {
     nativeTimeline = new ViewTimeline({
@@ -20,28 +21,50 @@ export function defineEnterAnimation(options: EnterAnimationOptions) {
     rangeStart,
     rangeEnd,
   });
-  animatable.onfinish = () => {
-    console.log('onfinish');
-  };
+
+  let onEnd: () => void = () => {};
+
+  const finished = new Promise<EnterAnimation>((resolve) => (onEnd = () => resolve(enterAnimation)));
 
   if (!nativeTimeline) {
     animatable.pause();
-    createScrollViewTimeline({
+
+    scrollViewTimeline = createScrollViewTimeline({
       subject,
       rangeStart,
       rangeEnd,
-      onScroll(value, oldValue, state) {
-        console.log('onScroll', value, oldValue, state);
+      onScroll(value) {
         animatable.currentTime = value * 100;
       },
+      onEnd,
     });
+  } else {
+    animatable.onfinish = onEnd;
   }
 
-  return {
-    destroy() {
+  const enterAnimation: EnterAnimation = {
+    finished,
+    pause() {
+      if (scrollViewTimeline) scrollViewTimeline.pause();
+      else animatable.pause();
+    },
+    play() {
+      if (scrollViewTimeline) scrollViewTimeline.play();
+      else animatable.play();
+    },
+    cancel() {
       animatable.cancel();
+      scrollViewTimeline?.cancel();
     },
   };
+  return enterAnimation;
+}
+
+export interface EnterAnimation {
+  finished: Promise<EnterAnimation>;
+  pause(): void;
+  play(): void;
+  cancel(): void;
 }
 
 export interface EnterAnimationOptions {

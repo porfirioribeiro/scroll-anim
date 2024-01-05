@@ -8,7 +8,7 @@ export function useScrollAnimation({ target, subject = target, ...o }: ScrollAni
     if (!target || !subject || (target == oldTarget && subject == oldSubject)) return;
 
     const anim = defineEnterAnimation({ target, subject, ...o });
-    onCleanup(anim.destroy);
+    onCleanup(anim.cancel);
   });
 }
 
