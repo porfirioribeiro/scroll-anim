@@ -2,6 +2,8 @@ import { CSSRangeType, CSSRangeUnit } from './types';
 
 export type AnimationState = 'start' | 'running' | 'end';
 
+const isScrollEndSupported = 'onscrollend' in window;
+
 export function createScrollViewTimeline({
   subject,
   rangeStart = 'cover 0%',
@@ -9,7 +11,7 @@ export function createScrollViewTimeline({
   onScroll,
   onEnd,
 }: ScrollViewTimelineOptions) {
-  let pos: ReturnType<typeof calculatePos>;
+  let pos: ReturnType<typeof calculatePos> = calculatePos(subject.getBoundingClientRect(), rangeStart, rangeEnd);
   let observing = false;
   let state: AnimationState = 'start';
   let prevValue = -1;
@@ -22,7 +24,7 @@ export function createScrollViewTimeline({
     }
   });
 
-  function startScrollObserve(rect = subject.getBoundingClientRect()) {
+  function startScrollObserve(rect: DOMRect) {
     observing = true;
     pos = calculatePos(rect, rangeStart, rangeEnd);
 
@@ -33,8 +35,6 @@ export function createScrollViewTimeline({
   function stopScrollObserve() {
     observing = false;
 
-    // run one last time to make sure the animation is finished
-    handleScroll();
     window.removeEventListener('scroll', handleScroll);
   }
 
@@ -54,17 +54,25 @@ export function createScrollViewTimeline({
     if (value >= 1) onEnd?.();
   }
 
+  let timer: number | undefined = undefined;
+
+  function play() {
+    // todo: throw error if already cancelled
+    io.observe(subject);
+    // IntersectionObserver doesn't trigger when scroll fasts
+    if (isScrollEndSupported) window.addEventListener('scrollend', handleScroll, { passive: true });
+    else timer = setInterval(handleScroll, 1000) as unknown as number;
+  }
+
   function pause() {
     stopScrollObserve();
     io.unobserve(subject);
-  }
-
-  function play() {
-    io.observe(subject);
+    if (isScrollEndSupported) window.removeEventListener('scrollend', handleScroll);
+    else clearInterval(timer);
   }
 
   function cancel() {
-    stopScrollObserve();
+    pause();
     io.disconnect();
   }
 
