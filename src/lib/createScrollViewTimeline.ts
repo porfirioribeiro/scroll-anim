@@ -32,6 +32,9 @@ export function createScrollViewTimeline({
 
   function stopScrollObserve() {
     observing = false;
+
+    // run one last time to make sure the animation is finished
+    handleScroll();
     window.removeEventListener('scroll', handleScroll);
   }
 
