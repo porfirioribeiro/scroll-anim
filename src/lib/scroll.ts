@@ -3,7 +3,6 @@ import { CSSRangeUnit } from './types';
 
 export function defineEnterAnimation(options: EnterAnimationOptions): EnterAnimation {
   const { target, subject = target, keyframes, noNative, rangeStart, rangeEnd } = options;
-  console.log('defineEnterAnimation', options);
 
   let nativeTimeline: AnimationTimeline | undefined = undefined;
   let scrollViewTimeline: ScrollViewTimeline | undefined = undefined;

@@ -81,15 +81,14 @@ export interface ScrollViewTimelineOptions {
 }
 
 function calculatePos(rect: DOMRect, rangeStart: CSSRangeUnit, rangeEnd: CSSRangeUnit) {
-  const [startType, startPercent] = parseRange(rangeStart);
-  const [endType, endPercent] = parseRange(rangeEnd);
+  const [startType, startPercent] = parseRange(rangeStart, 0);
+  const [endType, endPercent] = parseRange(rangeEnd, 1);
 
   const scrollTop = document.documentElement.scrollTop;
   const clientHeight = document.documentElement.clientHeight;
 
   const top = scrollTop + rect.top;
   const height = rect.height;
-
   const beginY = top - clientHeight;
 
   let scrollBegin = 0;
@@ -97,6 +96,10 @@ function calculatePos(rect: DOMRect, rangeStart: CSSRangeUnit, rangeEnd: CSSRang
     scrollBegin = beginY + height + clientHeight * startPercent - height * startPercent;
   } else if (startType === 'cover') {
     scrollBegin = beginY + clientHeight * startPercent + height * startPercent;
+  } else if (startType === 'entry') {
+    scrollBegin = beginY + height * startPercent;
+  } else if (startType === 'exit') {
+    scrollBegin = beginY + clientHeight + height * startPercent;
   }
 
   let scrollEnd = 0;
@@ -104,6 +107,10 @@ function calculatePos(rect: DOMRect, rangeStart: CSSRangeUnit, rangeEnd: CSSRang
     scrollEnd = beginY + height + clientHeight * endPercent - height * endPercent;
   } else if (endType === 'cover') {
     scrollEnd = beginY + clientHeight * endPercent + height * endPercent;
+  } else if (endType === 'entry') {
+    scrollEnd = beginY + height * endPercent;
+  } else if (endType === 'exit') {
+    scrollEnd = beginY + clientHeight + height * endPercent;
   }
 
   return [scrollBegin, scrollEnd];
@@ -111,7 +118,7 @@ function calculatePos(rect: DOMRect, rangeStart: CSSRangeUnit, rangeEnd: CSSRang
 
 type ParsedRange = [type: CSSRangeType, percent: number];
 
-function parseRange(range: CSSRangeUnit): ParsedRange {
+function parseRange(range: CSSRangeUnit, def = 1): ParsedRange {
   const [type, percent] = range.split(' ');
-  return [type as CSSRangeType, parseFloat(percent) / 100];
+  return [type as CSSRangeType, percent ? parseFloat(percent) / 100 : def];
 }

@@ -1,3 +1,3 @@
 export type CSSPercent = `${number}%`;
-export type CSSRangeType = 'cover' | 'contain';
-export type CSSRangeUnit = `${CSSRangeType} ${CSSPercent}`;
+export type CSSRangeType = 'cover' | 'contain' | 'entry' | 'exit';
+export type CSSRangeUnit = CSSRangeType | `${CSSRangeType} ${CSSPercent}`;
